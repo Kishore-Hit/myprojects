@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+      .tab {
+  position: fixed;
+  justify-content: center;   /* 🔥 CENTER EVERYTHING */
+
+  top: 120px;              /* below header */
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 15px;
+  padding: 8px 15px;
+  background: red;
+  z-index: 999;
+}
+
+
+.tablinks {
+  position: relative;
+  background: blue;
+  border: 1px solid #444;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.tablinks:hover {
+  background: purple;
+}
+/* Submenu */
+.submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  min-width: 180px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+
+.submenu a {
+  display: block;
+  padding: 8px 12px;
+  color: #333;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  background: #f1f1f1;
+}
+
+  th.amount-col,
+  td.amount-col {
+    min-width: 80px;
+    text-align: right;
+  }
+  th:not(.rotate) > div {
+  transform: none;
+  width: auto;
+}
+  th.rotate {
+    height: 140px;
+    vertical-align: bottom;
+    padding: 0;
+    white-space: nowrap;
+    width: 30px;
+  }
+
+  th.rotate > div {
+    transform: rotate(-90deg);
+    transform-origin: centre right;
+    width: 30px;
+  }
+
+  th.rotate span {
+    display: inline-block;
+    padding: 6px 10px;
+      text-align: right;
+
+  }
+  #navPannel {
+  position: fixed;
+  top: 120px;                 /* same as .tab top */
+  left: 0;
+  width: 100%;
+  background: red;            /* match .tab background */
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+#dateRangeDiv,#dateInputDiv{
+  position: fixed;
+  top: 160px;   
+}
+#pageNameDiv {
+  position: fixed;
+  top: 160px;
+  left: 50%;                 /* Moves the left edge to the screen's center */
+  transform: translateX(-50%); /* Shifts it back by half its own width to center it perfectly */
+  text-align: center;        /* Ensures internal text stays centered */
+  z-index: 1000;             /* Keeps it above other content */
+}
+
+  #outputDiv {
+  width: 100%;             
+  margin: 110px auto 0;       /* 110px top, auto left/right (centers it), 0 bottom */
+  padding: 15px 20px;
+  min-height: calc(100vh - 160px);
+  background: #f9f9f9;
+  overflow-x: auto;
+}  
+  /* Custom Right-Click Menu Styling */
+#contextMenu {
+    position: absolute;
+    display: none;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    z-index: 1000;
+    min-width: 180px;
+}
+
+#contextMenu ul {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+}
+
+#contextMenu ul li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+/* The actual permanent color */
+.colored-row {
+    background-color: #ffe082 !important; 
+}
+
+/* The temporary 'selection' highlight (while clicking) */
+.selected {
+    outline: 2px solid #2196F3;
+    background-color: #e3f2fd !important;
+}
+
+#contextMenu li:hover {
+    background-color: #f5f5f5;
+}
+
+/* Responsive hidden class for filtering */
+.hidden-row {
+    display: none !important;
+}
+@media print {
+  /* Hides the original top header element so it does not duplicate on page 1 */
+  #headerDiv.print-hide {
+    display: none !important;
+  }
+
+  /* Ensures the cloned header inside the table stays visible */
+  #clonedHeaderContent {
+    display: block !important;
+    text-align: center;
+    width: 100%;
+    padding-bottom: 20px;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  #outputDiv, table {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+  }
+}
+
+</style>
+
+  <?!= include('home.html'); ?>
+  <?!= include('variables.html'); ?> 
+  <?!= include('commonJs.html'); ?>
+  <?!= include('cssJs.html'); ?>
+  <?!= include('malCalenderJs.html'); ?> 
+  <!-- 1. Corrected Flatpickr CSS & JS links -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <!-- 1. xlx library for creating xlx file -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+
+  </head>
+  <body>
+    <div id="loginDiv">
+        <form id="loginForm" style="text-align: center; width: 100%;">
+          Username: <input type="text" name="username" id="userName" required><br>
+          Password: <input type="password" name="password" id="passWord" required><br>
+          <input type="button" id="loginButton"value="Login" onclick="submitForm()">
+          <i id="spinnerIcon" class="fa fa-spinner fa-spin" style="display:none; font-size: 50px;"></i>  
+          <?var url = getUrl();?>
+        </form> 
+      </div>
+      <div id="headerDiv" style="display:none;text-align: center;">
+        <?!= include('header.html'); ?>
+        <?!= include('emblem.html'); ?>
+      </div>
+    <div id="navPannel"></div>
+    <div id="dateRangeDiv" style="display:none;">
+  From: <input type="date" id="fromDate"class="dateInput">
+  To: <input type="date" id="toDate"class="dateInput">
+    <select id="registerSelect" class="regSelect" style="width: auto; max-width: 150px; padding: 2px 5px;">
+    </select>
+
+  <button onclick="submitDateRange()">OK</button>
+</div>
+<div id="dateInputDiv" style="display:none;">
+  Date: <input type="date" id="dateInput"class="dateInput">
+  <button onclick="submitDate()">OK</button>
+</div>
+    <div id="outputDiv"></div>
+    
+  <script>
+    //flatpickr(".dateInput", { dateFormat: "d-m-Y" });
+  function submitForm() {
+      showSpinner();
+
+      const formData = {
+        username: document.getElementById("userName").value.trim(),
+        password: document.getElementById("passWord").value.trim()
+      };
+      google.script.run
+            .withSuccessHandler(onLoginSuccess)
+            .checkLogin(formData); // ✅ call normal function
+  }
+    function onLoginSuccess(response) {
+      
+    if (response && response.status === 'success') {
+      document.getElementById("loginDiv").style.display = 'none';
+      document.getElementById("headerDiv").style.display = 'flex';
+      vazhivadItems=response.vazhivadItems;
+      level=response.level;
+      console.log("level",level);
+      const uniqueVazhivadItems = [...new Set(vazhivadItems.map(row => row[0]))];
+      uniqueVazhivadItems.sort();
+      vazhivadOptionsHtml = uniqueVazhivadItems
+      .map((item, index) => `<option value="${item}">${index + 1}-${item}</option>`)
+      .join('');
+      let registerOptions=['OnlineRegister(vazhivad)','OnlineRegister(pv)','OnlineNeyyattam'];
+      let defaultOption = '<option value="">Select Register</option>';
+      registerOptionsHtml = defaultOption+ [...registerOptions, ...uniqueVazhivadItems]
+      .map((item, index) => `<option value="${item}">${index + 1}-${item}</option>`)
+      .join('');
+      createNavigationScreen(level); 
+    }else{
+      alert("User name or password is incorrect");
+      }
+    }
+    
+   /**function printPreview(btn) {
+  // Hide the navigation and the specific button clicked
+  document.getElementById("navPannel").style.display = "none";
+  document.getElementById("pageNameDiv").style.display = "none";
+  btn.style.display = "none"; 
+
+  window.print();
+
+  // Bring them back
+  document.getElementById("navPannel").style.display = "block";
+  document.getElementById("pageNameDiv").style.display = "block";
+  btn.style.display = "block"; // or "block" depending on your styling
+}*/
+function printPreview(btn) {
+  const headerSource = document.getElementById("headerDiv");
+  const outputTable = document.querySelector("#outputDiv table");
+  document.getElementById("pageNameDiv").style.display = "none";
+  let originalDisplay = "";
+  let injectedRow = null;
+
+  if (headerSource && outputTable) {
+    originalDisplay = headerSource.style.display;
+    headerSource.style.display = "block";
+
+    // 1. Add a temporary class to hide the ORIGINAL header instance on print
+    headerSource.classList.add("print-hide");
+
+    let thead = outputTable.querySelector("thead");
+    if (!thead) thead = outputTable.createTHead();
+    
+    // 2. Insert a brand new row at the absolute top of the table header
+    injectedRow = thead.insertRow(0);
+    let th = injectedRow.insertCell(0);
+    
+    const lastRow = outputTable.rows[outputTable.rows.length - 1];
+    th.colSpan = lastRow ? lastRow.cells.length : 1;
+    
+    // 3. Clone the header into the table (This clone will NOT have the print-hide rule applied inside the table cell)
+    let clonedHeader = headerSource.cloneNode(true);
+    clonedHeader.id = "clonedHeaderContent"; // Give it a unique ID
+    th.appendChild(clonedHeader);
+  }
+
+  // Hide structural controls
+  document.getElementById("navPannel").style.display = "none";
+  document.getElementById("dateRangeDiv").style.display = "none";
+  document.getElementById("dateInputDiv").style.display = "none";
+  if (btn) btn.style.display = "none";
+
+  // Fire Print Action Dialog
+  window.print();
+
+  // Complete reversal restoration
+  document.getElementById("navPannel").style.display = "block";
+  document.getElementById("pageNameDiv").style.display = "block";
+  if (btn) btn.style.display = "inline-block";
+  
+  if (headerSource) {
+    headerSource.style.display = originalDisplay;
+    headerSource.classList.remove("print-hide"); // Remove class so it stays visible on screen
+  }
+
+  // Safely remove only the injected print row
+  if (injectedRow) {
+    injectedRow.remove();
+  }
+}
+
+function prepareForPrint() {
+  const header = document.getElementById("headerContent");
+  const myTable = document.querySelector("#outputDiv table"); // Your generated table
+
+  if (myTable && !myTable.querySelector("thead")) {
+    const thead = myTable.createTHead();
+    const row = thead.insertRow();
+    const cell = row.insertCell();
+    
+    // Move the existing header into the table header cell
+    cell.appendChild(header);
+    
+    // Make sure the cell spans all columns of your table
+    const colCount = myTable.rows[1]?.cells.length || 1;
+    cell.colSpan = colCount;
+  }
+}
+
+
+    function getOnlineRegister(){
+      
+          google.script.run
+      .withSuccessHandler(onSuccess)
+
+      .returnOnlineRegister()
+
+    }
+function onSuccess(data) {
+  let originalData = JSON.parse(data);
+
+  // 🔹 sort by date (row[9])
+  originalData.sort((a, b) => new Date(a[9]) - new Date(b[9]));
+
+  const fromDate = startOfDay(new Date(document.getElementById("fromDate").value) );
+  const toDate   = endOfDay(new Date(document.getElementById("toDate").value) );
+ // const fromDate = startOfDay(new Date(fromInput.value));
+ // const toDate   = endOfDay(new Date(toInput.value));
+
+ // fromDate.setHours(0, 0, 0, 0);
+  // ✅ make toDate inclusive (important!)
+  //toDate.setHours(23, 59, 59, 999);
+  
+  // 🔹 FILTER DATA BETWEEN DATES
+  const filteredData = originalData.filter(row => {
+    const rowDate = new Date(row[9]);
+    return rowDate >= fromDate && rowDate <= toDate;
+  });
+
+  // 🔹 build columns ONLY from filtered data
+  const {
+    normalizedUniqueValues,
+    itemColumnMap
+  } = buildItemColumns(filteredData);
+
+  const firstDayOfMonth = new Date(fromDate.getFullYear(), fromDate.getMonth(), 1);
+
+  const munvakaItemWise = calculateMunvaka(
+    originalData,          // ⚠️ full data for previous-date totals
+    fromDate,
+    firstDayOfMonth,
+    itemColumnMap,
+    normalizedUniqueValues
+  );
+
+  buildTable(
+    filteredData,          // ✅ only filtered rows shown
+    normalizedUniqueValues,
+    itemColumnMap,
+    munvakaItemWise,
+    fromDate,
+    firstDayOfMonth
+  );
+}
+function startOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+}
+
+function endOfDay(d) {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999);
+}
+
+function buildItemColumns(data) {
+  const uniqueValues = [...new Set(data.map(r => r[3]).filter(Boolean))];
+
+  const normalizedUniqueValues = [];
+  const itemColumnMap = {};
+
+  uniqueValues.forEach(item => {
+    const norm = item.trim().toLowerCase();
+
+    if (norm === "pushpanjali") {
+      if (!normalizedUniqueValues.includes("Pushpanjali")) {
+        normalizedUniqueValues.push("Pushpanjali");
+      }
+      itemColumnMap[item] = "Pushpanjali";
+
+    } else if (norm.includes("pushpanjali")) {
+      if (!normalizedUniqueValues.includes("Spl. Pushpanjali")) {
+        normalizedUniqueValues.push("Spl. Pushpanjali");
+      }
+      itemColumnMap[item] = "Spl. Pushpanjali";
+
+    } else {
+      if (!normalizedUniqueValues.includes(item)) {
+        normalizedUniqueValues.push(item);
+      }
+      itemColumnMap[item] = item;
+    }
+  });
+
+  return { normalizedUniqueValues, itemColumnMap };
+}
+
+function calculateMunvaka(data, fromDate, firstDayOfMonth, itemColumnMap, columns) {
+  const munvaka = {};
+  columns.forEach(c => munvaka[c] = 0);
+
+  if (fromDate.getTime() === firstDayOfMonth.getTime()) {
+    return munvaka;
+  }
+
+  data.forEach(row => {
+    const rowDate = new Date(row[9]);
+    const amount  = Number(row[8]) || 0;
+    const item    = row[3];
+    const col     = itemColumnMap[item];
+
+    if (
+      rowDate >= firstDayOfMonth &&
+      rowDate < fromDate &&
+      col
+    ) {
+      munvaka[col] += amount;
+    }
+  });
+
+  return munvaka;
+}
+function buildTable(
+  data,
+  columns,
+  itemColumnMap,
+  munvakaItemWise,
+  fromDate,
+  firstDayOfMonth
+) {
+  const table = document.getElementById("reportTable");
+  const thead = table.querySelector("thead");
+  const tbody = table.querySelector("tbody");
+
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  buildHeader(thead, columns);
+
+  const groupedByDate = groupByDate(data);
+
+  const cumulativeTotals = { ...munvakaItemWise };
+  let previousTotals = {};
+
+  let showMunvaka = fromDate.getTime() !== firstDayOfMonth.getTime(); // ✅
+
+  Object.keys(groupedByDate).forEach((dateKey, index) => {
+
+    const dayTotals = {};
+    columns.forEach(c => dayTotals[c] = 0);
+    let dayGrandTotal = 0;
+
+    groupedByDate[dateKey].forEach(row => {
+      const amount = Number(row[8]) || 0;
+      const item   = row[3];
+      const col    = itemColumnMap[item];
+
+      dayGrandTotal += amount;
+      if (col) dayTotals[col] += amount;
+
+      tbody.appendChild(
+        buildDataRow(row, columns, col, amount)
+      );
+    });
+
+    // Day total
+    tbody.appendChild(
+      buildTotalRow("Day Total", dayTotals, dayGrandTotal, columns)
+    );
+
+    // ✅ Previous Date Total only if munvaka applicable
+   // ✅ Previous Date Total (Munvaka)
+      if (showMunvaka && index > 0) {
+        const prevSum = Object.values(previousTotals)
+          .reduce((a, b) => a + b, 0);
+
+        tbody.appendChild(
+          buildTotalRow(
+            "Previous Date Total",
+            previousTotals,
+            prevSum,
+            columns
+          )
+        );
+      }
+
+    // Update cumulative
+    columns.forEach(c => cumulativeTotals[c] += dayTotals[c]);
+    const cumSum = Object.values(cumulativeTotals).reduce((a,b)=>a+b,0);
+
+    tbody.appendChild(
+      buildTotalRow("Cumulative Total", cumulativeTotals, cumSum, columns)
+    );
+
+    previousTotals = { ...cumulativeTotals };
+  });
+}
+
+function buildHeader(thead, columns) {
+  const tr = document.createElement("tr");
+
+  let colIndex = 0;
+
+  function makeHeader(text, cls = "") {
+    const th = document.createElement("th");
+    if (cls) th.classList.add(cls);
+
+    const div = document.createElement("div");
+    const span = document.createElement("span");
+    span.textContent = text;
+
+    div.appendChild(span);
+    th.appendChild(div);
+
+    console.log(`Header "${text}" → index ${colIndex}`);
+    colIndex++;
+
+    return th;
+  }
+
+  // fixed headers
+  tr.appendChild(makeHeader("Date"));
+  tr.appendChild(makeHeader("Rec No"));
+  tr.appendChild(makeHeader("Item"));
+  tr.appendChild(makeHeader("Amount", "amount-col")); // 👈 amount index logged here
+
+  // dynamic headers
+  columns.forEach(h => {
+    tr.appendChild(makeHeader(h, "rotate")); // 👈 unique column indexes logged
+  });
+
+  thead.appendChild(tr);
+}
+
+function buildDataRow(row, columns, activeCol, amount) {
+  const tr = document.createElement("tr");
+
+  [
+  { val: new Date(row[9]).toLocaleDateString() },
+  { val: row[2] },
+  { val: row[3] },
+  { val: amount, cls: "amount-col" } // 👈 FIX
+].forEach(o => {
+  const td = document.createElement("td");
+  td.textContent = o.val;
+  if (o.cls) td.classList.add(o.cls);
+  tr.appendChild(td);
+});
+
+  columns.forEach(c => {
+    const td = document.createElement("td");
+    td.textContent = (c === activeCol) ? amount : "";
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+function buildTotalRow(label, itemTotals, grandTotal, columns) {
+  const tr = document.createElement("tr");
+  tr.style.fontWeight = "bold";
+  tr.style.background = "#f5f5f5";
+
+  // Label (Date + RecNo + Item)
+  const labelTd = document.createElement("td");
+  labelTd.colSpan = 3;
+  labelTd.textContent = label;
+  tr.appendChild(labelTd);
+
+  // Amount column
+  const amtTd = document.createElement("td");
+  amtTd.textContent = grandTotal;
+  tr.appendChild(amtTd);
+
+  // Dynamic columns (⚠️ must match header exactly)
+  columns.forEach(c => {
+    const td = document.createElement("td");
+    td.textContent = itemTotals[c] || "";
+    tr.appendChild(td);
+  });
+
+  return tr;
+}
+
+function groupByDate(data) {
+  const grouped = {};
+  data.forEach(row => {
+    const key = new Date(row[9]).toDateString();
+    if (!grouped[key]) grouped[key] = [];
+    grouped[key].push(row);
+  });
+  return grouped;
+}
+
+
+  </script> 
+  </body>
+</html>
