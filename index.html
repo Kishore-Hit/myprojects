@@ -205,7 +205,21 @@
     </form>
   </div>
     <div id="content"></div>
+  <div id="navPannel"></div>
+    <div id="dateRangeDiv" style="display:none;">
+  From: <input type="date" id="fromDate"class="dateInput">
+  To: <input type="date" id="toDate"class="dateInput">
+    <select id="registerSelect" class="regSelect" style="width: auto; max-width: 150px; padding: 2px 5px;">
+    </select>
 
+  <button onclick="submitDateRange()">OK</button>
+</div>
+<div id="dateInputDiv" style="display:none;">
+  Date: <input type="date" id="dateInput"class="dateInput">
+  <button onclick="submitDate()">OK</button>
+</div>
+    <div id="outputDiv"></div>
+   
     <script>
       function submitForm() {
         var loginButton = document.getElementById("loginButton");
