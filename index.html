@@ -61,15 +61,25 @@
 
   </head>
   <body>
+    <div id="headerContent" style="text-align: center; width: 100%;">
+  <h2 id="name" style="display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; margin: 0 auto;">
+    <span>COCHIN DEVA</span>
+    <img id="emblemImg" style="display:none;" width="80">
+    <span>SWOM BOARD</span>
+  </h2>
+  <div id="mainContainer">
+    <div id="devaswomName">WADAKKUNNATHAN DEVASWOM</div>
+    <div id="pageNameDiv"></div>
+  </div>
+</div>
+
+  <div id="loginDiv">
     <form id="loginForm">
       Username: <input type="text" name="username" id="userName" required><br>
       Password: <input type="password" name="password" id="passWord" required><br>
       <input type="button" id="loginButton"value="Login" onclick="submitForm()">
-      <?var url = getUrl();?>
-
-  <a id="bhandaramLink" href='<?=url?>?page=index' style="display: none;">bhandaram</a><br><br>
-
     </form>
+  </div>
     <div id="content"></div>
 
     <script>
@@ -102,11 +112,9 @@
             document.getElementById("userName").value = "";
             document.getElementById("passWord").value = "";
             // Display the username in the index page link
-            var bhandaramLink = document.getElementById("bhandaramLink");
-            bhandaramLink.href = '<?=url?>?page=index&username=' + encodeURIComponent(usernameValue);
-            document.getElementById("bhandaramLink").style.display = "inline";
-            // Include index content directly
-          // google.script.run.withSuccessHandler(showIndexContent).showIndexPage();
+            document.getElementById("loginDiv").style.display = "none";
+            document.getElementById("headerContent").style.display = "block";
+            createNavigationScreen(level);
       } else {
           // Display the login failure message
           alert(response.message);
@@ -119,15 +127,81 @@
         document.getElementById("loginButton").classList.remove("in-progress");
         alert(error);
       }
-    function showIndexContent(content) {
-    // Check if the content is not null or undefined
-      if (content) {
-        document.getElementById('content').innerHTML = content;
-      } else {
-        // Display an error message if content is not received
-        alert("Error: Unable to retrieve index content.");
-     }
+      // Global listener to detect clicks outside the navigation system
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.submenu').forEach(m => {
+        m.style.display = "none";
+      });
+    });
+ function createNavigationScreen(level) {
+  const tabContainer = document.createElement('div');
+  tabContainer.className = 'tab';
+
+  const navCategories = [
+    { name: "neyyattam", pages: ["neyyattamEntry", 'viewNeyyattam', 'neyyattamBooking', 'neyyattamBooking-monthwise', 'neyyattamBalance', 'neyyattamPuravaka'] },
+    { name: "onlineRegister", pages: ["onlineDataEntry", "onlineRegisterEntry(bulkUpload)", "viewOnlineRegister(vazhivad)", "viewOnlineRegister(pv)", "viewOnlineNeyyattam", "viewRegisters"] },
+    { name: "doubleLock", pages: ["doubleReceipt"] },
+    { name: "help&feedBack", pages: ["malayalamcalender", "help"] }
+  ];
+
+  // List of restricted pages for level 1 users
+  const restrictedPages = ["neyyattamEntry", "onlineDataEntry", "onlineRegisterEntry(bulkUpload)","doubleReceipt"];
+
+  navCategories.forEach(category => {
+    // ✅ Filter out restricted pages if user level is 1
+    let accessiblePages = category.pages;
+    console.log("level",level);
+    if (level == 1) {
+      accessiblePages = category.pages.filter(page => !restrictedPages.includes(page));
+    }
+    // Skip creating the category button entirely if it has no accessible pages left
+    if (accessiblePages.length === 0) return;
+
+    const wrapper = document.createElement('div');
+    wrapper.style.position = "relative";
+
+    const tabButton = document.createElement('button');
+    tabButton.className = 'tablinks';
+    tabButton.textContent = category.name;
+
+    const submenu = document.createElement('div');
+    submenu.className = 'submenu';
+
+    // ✅ Loop through filtered pages instead of the original category.pages
+    accessiblePages.forEach(page => {
+      const link = document.createElement('a');
+      link.href = "#";
+      link.textContent = page;
+      link.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        submenu.style.display = "none";
+        loadPage(page); 
+      };
+      submenu.appendChild(link);
+    });
+
+    wrapper.appendChild(tabButton);
+    wrapper.appendChild(submenu);
+    tabContainer.appendChild(wrapper);
+
+    tabButton.onclick = (e) => {
+      e.stopPropagation();
+      document.querySelectorAll('.submenu').forEach(m => {
+        if (m !== submenu) m.style.display = "none";
+      });
+      submenu.style.display =
+        submenu.style.display === "block" ? "none" : "block";
+    };
+  });
+
+  const navPanel = document.getElementById('navPannel');
+  if (navPanel) {
+    navPanel.innerHTML = "";
+    navPanel.appendChild(tabContainer);
   }
+}
+  
     </script>
   </body>
 </html>
