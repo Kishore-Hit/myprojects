@@ -25,53 +25,176 @@
         text-align: center;
       }
 
-      input {
-        width: 100%;
-        padding: 10px;
-        margin: 8px 0;
-        box-sizing: border-box;
-      }
+            .tab {
+  position: fixed;
+  justify-content: center;   /* 🔥 CENTER EVERYTHING */
 
-      input[type="button"] {
-        background-color: #4caf50;
-        color: white;
-        border: none;
-        padding: 15px 20px;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.3s ease;
-      }
+  top: 120px;              /* below header */
+  left: 0;
+  width: 100%;
+  display: flex;
+  gap: 15px;
+  padding: 8px 15px;
+  background: red;
+  z-index: 999;
+}
 
-      input[type="button"]:hover {
-        background-color: #45a049;
-      }
 
-      #bhandaramLink {
-        display: none;
-        text-decoration: none;
-        color: #4caf50;
-        font-weight: bold;
-        margin-top: 15px;
-      }
+.tablinks {
+  position: relative;
+  background: blue;
+  border: 1px solid #444;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.tablinks:hover {
+  background: purple;
+}
+/* Submenu */
+.submenu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: white;
+  min-width: 180px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
 
-      #content {
-        margin-top: 20px;
-      }
+.submenu a {
+  display: block;
+  padding: 8px 12px;
+  color: #333;
+  text-decoration: none;
+}
+
+.submenu a:hover {
+  background: #f1f1f1;
+}
+
+  th.amount-col,
+  td.amount-col {
+    min-width: 80px;
+    text-align: right;
+  }
+  th:not(.rotate) > div {
+  transform: none;
+  width: auto;
+}
+  th.rotate {
+    height: 140px;
+    vertical-align: bottom;
+    padding: 0;
+    white-space: nowrap;
+    width: 30px;
+  }
+
+  th.rotate > div {
+    transform: rotate(-90deg);
+    transform-origin: centre right;
+    width: 30px;
+  }
+
+  th.rotate span {
+    display: inline-block;
+    padding: 6px 10px;
+      text-align: right;
+
+  }
+  #navPannel {
+  position: fixed;
+  top: 120px;                 /* same as .tab top */
+  left: 0;
+  width: 100%;
+  background: red;            /* match .tab background */
+  z-index: 1000;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+#dateRangeDiv,#dateInputDiv{
+  position: fixed;
+  top: 160px;   
+}
+#pageNameDiv {
+  position: fixed;
+  top: 160px;
+  left: 50%;                 /* Moves the left edge to the screen's center */
+  transform: translateX(-50%); /* Shifts it back by half its own width to center it perfectly */
+  text-align: center;        /* Ensures internal text stays centered */
+  z-index: 1000;             /* Keeps it above other content */
+}
+
+  #outputDiv {
+  width: 100%;             
+  margin: 110px auto 0;       /* 110px top, auto left/right (centers it), 0 bottom */
+  padding: 15px 20px;
+  min-height: calc(100vh - 160px);
+  background: #f9f9f9;
+  overflow-x: auto;
+}  
+  /* Custom Right-Click Menu Styling */
+#contextMenu {
+    position: absolute;
+    display: none;
+    background: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    z-index: 1000;
+    min-width: 180px;
+}
+
+#contextMenu ul {
+    list-style: none;
+    margin: 0;
+    padding: 5px 0;
+}
+
+#contextMenu ul li {
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.2s;
+}
+
+/* The actual permanent color */
+.colored-row {
+    background-color: #ffe082 !important; 
+}
+
+/* The temporary 'selection' highlight (while clicking) */
+.selected {
+    outline: 2px solid #2196F3;
+    background-color: #e3f2fd !important;
+}
+
+#contextMenu li:hover {
+    background-color: #f5f5f5;
+}
+
+/* Responsive hidden class for filtering */
+.hidden-row {
+    display: none !important;
+}
     </style>
 
   </head>
   <body>
         <!-- FIXED: Added standard block display controls for your exact header container -->
-    <div id="headerContent" style="display:none; text-align: center; width: 100%;">
-      <h2 id="name" style="display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; margin: 0 auto;">
-        <span>COCHIN DEVA</span>
-        <img id="emblemImg" style="display:none;" width="80">
-        <span>SWOM BOARD</span>
-      </h2>
-      <div id="mainContainer">
-        <div id="devaswomName">WADAKKUNNATHAN DEVASWOM</div>
-        <div id="pageNameDiv"></div>
-      </div>
+      <div id="headerDiv" style="display:none;text-align: center;">
+      <div id="headerContent" style="text-align: center; width: 100%;">
+  <h2 id="name" style="display: flex; justify-content: center; align-items: center; gap: 10px; width: 100%; margin: 0 auto;">
+    <span>COCHIN DEVA</span>
+    <img id="emblemImg" style="display:none;" width="80">
+    <span>SWOM BOARD</span>
+  </h2>
+  <div id="mainContainer">
+    <div id="devaswomName">WADAKKUNNATHAN DEVASWOM</div>
+    <div id="pageNameDiv"></div>
+  </div>
+</div>
     </div>
 
   <div id="loginDiv">
@@ -114,7 +237,7 @@
             document.getElementById("passWord").value = "";
             // Display the username in the index page link
             document.getElementById("loginDiv").style.display = "none";
-            document.getElementById("headerContent").style.display = "block";
+            document.getElementById("headerDiv").style.display = "block";
             createNavigationScreen(level);
       } else {
           // Display the login failure message
